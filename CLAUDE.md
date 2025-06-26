@@ -88,12 +88,80 @@ The cloud-memory server maintains hierarchical project data, learning objectives
 
 ## Development Workflow
 
-This project follows professional GitHub flow:
+This project follows professional GitHub flow with **FLOW Methodology** integration:
+
+### **GitHub Flow Process**
 - Issues for feature requests and bug reports
-- Pull requests for all changes
-- Branch protection on main
-- Code review requirements
-- Safe rollback capabilities
+- Feature branches for all changes (`feature/issue-name`)
+- Pull requests with comprehensive testing
+- Code review requirements and feedback iteration
+- Branch protection on main with safe rollback capabilities
+
+### **FLOW Methodology Implementation**
+
+**Following Logical Work Order** - systematic approach to all development:
+
+1. **LEARN** 📚
+   - Research issue requirements thoroughly
+   - Use `Task` tool for codebase exploration
+   - Check existing patterns and conventions
+   - Review related issues and documentation
+
+2. **UNDERSTAND** 🧠  
+   - Analyze integration points with existing code
+   - Identify dependencies and potential conflicts
+   - Plan architecture and component interactions
+   - Consider graceful degradation patterns
+
+3. **PLAN** 📋
+   - Create comprehensive TodoWrite breakdown
+   - Design test strategy (unit + integration + manual)
+   - Plan incremental implementation approach
+   - Consider security and production readiness
+
+4. **EXECUTE** ⚡
+   - Implement features incrementally with testing
+   - Follow established code conventions and patterns
+   - Commit frequently with meaningful messages
+   - Address code review feedback iteratively
+
+5. **VERIFY** ✅
+   - Comprehensive test coverage (unit + integration)
+   - Manual testing with real dependencies
+   - Security review (secrets, environments, permissions)
+   - Performance and error handling validation
+
+6. **DOCUMENT** 📚
+   - Update README and inline documentation
+   - Capture lessons learned and future work
+   - Create educational content following VIBE principles
+   - Ensure intern-friendly onboarding materials
+
+### **Tool Integration Best Practices**
+
+**TodoWrite/TodoRead Usage:**
+- Start every significant task with TodoWrite planning
+- Update todo status in real-time as work progresses
+- Mark tasks completed immediately upon finishing
+- Only have ONE task in_progress at any time
+
+**Testing Framework:**
+- Unit tests with proper mocking for isolated testing
+- Integration tests for service connectivity
+- Manual verification checklists for user experience
+- Test-driven development when possible
+
+**Code Review Workflow:**
+- Address all review feedback systematically
+- Test fixes thoroughly before marking resolved
+- Commit improvements with clear explanations
+- Maintain respectful, educational dialogue
+
+**Security and Production Readiness:**
+- Comprehensive .gitignore for secrets and environments
+- Graceful degradation for optional dependencies
+- Clear error messages and helpful guidance
+- Performance considerations and resource management
 
 ## Next Steps for Implementation
 
