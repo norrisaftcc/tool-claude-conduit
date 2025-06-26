@@ -60,25 +60,34 @@ log_step() {
 show_help() {
     echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo ""
-    echo "Commands:"
-    echo "  setup        Set up environment and dependencies"
+    echo "🚀 QUICK START:"
+    echo "  $0 setup && $0 run    # Complete setup and launch"
+    echo ""
+    echo "📋 COMMANDS:"
+    echo "  setup        Set up environment and dependencies (required first)"
+    echo "  run          Start the dashboard"
     echo "  check        Check system requirements and service health"
-    echo "  demo         Seed demo data for testing"
-    echo "  run          Start the dashboard (default)"
     echo "  test         Run comprehensive tests"
+    echo "  demo         Seed demo data for testing"
     echo "  clean        Clean up demo data and reset environment"
     echo "  help         Show this help message"
     echo ""
-    echo "Options:"
+    echo "⚙️  OPTIONS:"
     echo "  --no-deps    Skip dependency installation"
     echo "  --port PORT  Set Streamlit port (default: 8501)"
     echo "  --verbose    Enable verbose output"
     echo ""
-    echo "Examples:"
-    echo "  $0 setup              # First-time setup"
+    echo "📚 EXAMPLES:"
+    echo "  $0                    # Show quick help"
+    echo "  $0 setup              # First-time setup (do this first!)"
     echo "  $0 check              # Health check"
     echo "  $0 run --port 8502    # Run on different port"
     echo "  $0 test --verbose     # Full test with verbose output"
+    echo ""
+    echo "🎯 WORKFLOW:"
+    echo "  1. Run setup once: $0 setup"
+    echo "  2. Start dashboard: $0 run"
+    echo "  3. Run tests: $0 test"
 }
 
 # Environment validation
@@ -413,9 +422,39 @@ setup_environment() {
     log_success "Setup completed! Use '$0 run' to start the dashboard."
 }
 
+# Show quick help when no arguments provided
+show_quick_help() {
+    echo -e "${BLUE}Streamlit Dashboard Test Runner${NC}"
+    echo ""
+    echo "Quick Start:"
+    echo "  ./test-runner.sh setup    # First-time setup (required)"
+    echo "  ./test-runner.sh run      # Start dashboard"
+    echo ""
+    echo "Available Commands:"
+    echo "  setup     Set up environment and dependencies"
+    echo "  check     Check system requirements"
+    echo "  test      Run comprehensive tests"
+    echo "  demo      Seed demo data"
+    echo "  run       Start the dashboard"
+    echo "  clean     Clean up demo data"
+    echo "  help      Show detailed help"
+    echo ""
+    echo "Examples:"
+    echo "  ./test-runner.sh setup && ./test-runner.sh run"
+    echo "  ./test-runner.sh check"
+    echo "  ./test-runner.sh help     # For all options"
+}
+
 # Main command handler
 main() {
-    local command=${1:-"run"}
+    # Show quick help if no arguments provided
+    if [ $# -eq 0 ]; then
+        print_banner
+        show_quick_help
+        exit 0
+    fi
+    
+    local command=${1:-"help"}
     local verbose=false
     local skip_deps=false
     local port=$STREAMLIT_PORT

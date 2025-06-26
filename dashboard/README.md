@@ -5,10 +5,13 @@ A simple, interactive web dashboard for visualizing and exploring the Tool Claud
 ## Quick Start
 
 ```bash
-# 1. Automated setup (recommended)
+# See all available commands
+./test-runner.sh
+
+# First-time setup (required)
 ./test-runner.sh setup
 
-# 2. Start the dashboard
+# Start the dashboard
 ./test-runner.sh run
 ```
 
