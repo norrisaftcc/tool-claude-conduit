@@ -16,11 +16,17 @@ st.markdown("Interactive visualization for Tool Claude Conduit's knowledge graph
 
 @st.cache_resource
 def get_neo4j_connection():
-    return Neo4jConnection(
-        uri=os.getenv("NEO4J_URI", "bolt://localhost:7687"),
-        user=os.getenv("NEO4J_USER", "neo4j"),
-        password=os.getenv("NEO4J_PASSWORD", "password")
-    )
+    try:
+        conn = Neo4jConnection(
+            uri=os.getenv("NEO4J_URI", "bolt://localhost:7687"),
+            user=os.getenv("NEO4J_USER", "neo4j"),
+            password=os.getenv("NEO4J_PASSWORD", "password")
+        )
+        # Test the connection
+        conn.execute_query("RETURN 1 as test")
+        return conn
+    except Exception:
+        return None
 
 @st.cache_resource
 def get_conduit_client():
@@ -61,33 +67,96 @@ def main():
         if fortune != "Fortune service unavailable":
             st.info(f"💭 {fortune}")
     
-    try:
-        conn = get_neo4j_connection()
-        visualizer = GraphVisualizer(conn)
-        conduit = get_conduit_client()
-        
-        if page == "Overview":
-            show_overview(conn)
-        elif page == "Knowledge Graph":
+    conn = get_neo4j_connection()
+    conduit = get_conduit_client()
+    
+    # Show Neo4j status in sidebar
+    if conn is None:
+        st.sidebar.warning("🔴 Neo4j Offline")
+        st.sidebar.info("Graph features disabled")
+    else:
+        st.sidebar.success("🟢 Neo4j Connected")
+    
+    # Initialize visualizer only if Neo4j is available
+    visualizer = GraphVisualizer(conn) if conn else None
+    
+    if page == "Overview":
+        show_overview(conn)
+    elif page == "Knowledge Graph":
+        if conn:
             show_knowledge_graph(visualizer, layout_type, node_limit)
-        elif page == "Process Flow":
+        else:
+            show_neo4j_required()
+    elif page == "Process Flow":
+        if conn:
             show_process_flow(visualizer)
-        elif page == "Analytics":
+        else:
+            show_neo4j_required()
+    elif page == "Analytics":
+        if conn:
             show_analytics(conn)
-        elif page == "Query Explorer":
+        else:
+            show_neo4j_required()
+    elif page == "Query Explorer":
+        if conn:
             show_query_explorer(conn)
-        elif page == "MCP Tools":
-            show_mcp_tools(conduit)
-        elif page == "Task Planning":
-            show_task_planning(conduit)
-            
-    except Exception as e:
-        st.error(f"Failed to connect to Neo4j: {str(e)}")
-        st.info("Make sure Neo4j is running and credentials are set correctly.")
+        else:
+            show_neo4j_required()
+    elif page == "MCP Tools":
+        show_mcp_tools(conduit)
+    elif page == "Task Planning":
+        show_task_planning(conduit)
+
+def show_neo4j_required():
+    """Show Neo4j required message"""
+    st.header("🔗 Neo4j Required")
+    st.info("This feature requires a Neo4j database connection.")
+    
+    st.markdown("### Quick Setup")
+    st.code("""
+# Install Neo4j
+brew install neo4j
+
+# Start Neo4j
+brew services start neo4j
+
+# Or use Neo4j Desktop
+# Download from: https://neo4j.com/download/
+    """, language="bash")
+    
+    st.markdown("### Alternative: Demo Mode")
+    st.markdown("You can still use:")
+    st.markdown("- 🛠️ **MCP Tools** - AI capabilities via claude-conduit")
+    st.markdown("- 📋 **Task Planning** - FLOW methodology and planning boost")
+    
+    if st.button("🔄 Retry Connection"):
+        st.rerun()
 
 def show_overview(conn):
     st.header("📊 System Overview")
     
+    if conn is None:
+        st.warning("Neo4j not connected - showing limited overview")
+        st.info("Connect Neo4j to see full graph statistics and activity")
+        
+        # Show basic system info without Neo4j
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Available Features")
+            st.success("✅ MCP Tools Integration")
+            st.success("✅ Task Planning (FLOW)")
+            st.success("✅ Claude Conduit Bridge")
+        
+        with col2:
+            st.subheader("Requires Neo4j")
+            st.error("❌ Knowledge Graph Visualization")
+            st.error("❌ Process Flow Diagrams") 
+            st.error("❌ Graph Analytics")
+            st.error("❌ Query Explorer")
+        
+        return
+    
+    # Original overview with Neo4j
     col1, col2, col3, col4 = st.columns(4)
     
     stats = conn.get_graph_statistics()
@@ -108,7 +177,7 @@ def show_overview(conn):
     with col1:
         st.subheader("Recent Activity")
         activity = conn.get_recent_activity(limit=10)
-        if activity:
+        if activity is not None and not activity.empty:
             st.dataframe(activity)
         else:
             st.info("No recent activity found")

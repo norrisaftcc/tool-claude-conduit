@@ -120,21 +120,21 @@ check_node() {
     fi
 }
 
-# Service health checks
+# Service health checks  
 check_neo4j() {
-    log_step "Checking Neo4j connection..."
+    log_step "Checking Neo4j connection (optional)..."
     if command -v nc &> /dev/null; then
         if nc -z localhost 7687 2>/dev/null; then
             log_success "Neo4j is running on port 7687"
             return 0
         else
-            log_warning "Neo4j not detected on port 7687"
-            log_info "  → Start Neo4j with: brew services start neo4j"
-            log_info "  → Or use Neo4j Desktop"
+            log_info "Neo4j not detected on port 7687 (optional service)"
+            log_info "  → Graph features will be disabled"
+            log_info "  → To enable: brew services start neo4j"
             return 1
         fi
     else
-        log_warning "Cannot check Neo4j (nc command not available)"
+        log_info "Cannot check Neo4j - graph features may be limited"
         return 1
     fi
 }
