@@ -166,8 +166,8 @@ app.post('/execute/:server/:tool', async (req, res) => {
     // If MCP fails, try plugin system
     try {
       const plugin = pluginSystem.getPlugin(server);
-      if (plugin && typeof plugin.execute === 'function') {
-        const result = await plugin.execute(tool, payload);
+      if (plugin) {
+        const result = await pluginSystem.executePlugin(server, tool, payload);
         
         res.json({
           status: 'success',
