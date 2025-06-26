@@ -1,5 +1,6 @@
 const BasePlugin = require('../../lib/base-plugin');
 const PluginInterface = require('../../lib/plugin-interface');
+const neo4j = require('neo4j-driver');
 
 /**
  * Cloud Knowledge Graph Plugin
@@ -17,11 +18,14 @@ class KnowledgeGraphPlugin extends BasePlugin {
       PluginInterface.CAPABILITY_CATEGORIES.REASONING
     ];
     
-    // Configuration - will be injected from environment
-    this.graphEndpoint = config.endpoint || process.env.KNOWLEDGE_GRAPH_ENDPOINT;
-    this.apiKey = config.apiKey || process.env.KNOWLEDGE_GRAPH_API_KEY;
-    this.username = config.username || process.env.KNOWLEDGE_GRAPH_USERNAME;
-    this.password = config.password || process.env.KNOWLEDGE_GRAPH_PASSWORD;
+    // Neo4j Configuration
+    this.uri = config.uri || process.env.NEO4J_URI;
+    this.username = config.username || process.env.NEO4J_USERNAME || 'neo4j';
+    this.password = config.password || process.env.NEO4J_PASSWORD;
+    
+    // Neo4j driver and session
+    this.driver = null;
+    this.session = null;
     
     // Graph client state
     this.connected = false;
@@ -32,15 +36,15 @@ class KnowledgeGraphPlugin extends BasePlugin {
   async init() {
     await super.init();
     
-    if (!this.graphEndpoint) {
-      throw new Error('Knowledge graph endpoint not configured');
+    if (!this.uri || !this.password) {
+      throw new Error('Neo4j connection details not configured');
     }
     
     try {
       await this.connect();
-      this.log('info', 'Knowledge graph connection established', {
-        endpoint: this.graphEndpoint,
-        hasAuth: !!(this.username && this.password)
+      this.log('info', 'Neo4j connection established', {
+        uri: this.uri,
+        username: this.username
       });
     } catch (error) {
       this.log('error', 'Failed to connect to knowledge graph', { error: error.message });
@@ -66,26 +70,39 @@ class KnowledgeGraphPlugin extends BasePlugin {
   }
 
   /**
-   * Connect to cloud knowledge graph database
+   * Connect to Neo4j cloud database
    */
   async connect() {
-    // Mock connection for now - replace with real cloud DB connection
-    this.log('info', 'Connecting to knowledge graph...', {
-      endpoint: this.graphEndpoint,
-      hasCredentials: !!(this.username && this.apiKey)
+    this.log('info', 'Connecting to Neo4j...', {
+      uri: this.uri,
+      username: this.username
     });
     
-    // Simulate connection time
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    this.connected = true;
-    this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    return {
-      connected: true,
-      sessionId: this.sessionId,
-      endpoint: this.graphEndpoint
-    };
+    try {
+      // Create Neo4j driver
+      this.driver = neo4j.driver(
+        this.uri,
+        neo4j.auth.basic(this.username, this.password)
+      );
+      
+      // Verify connectivity
+      await this.driver.verifyConnectivity();
+      
+      // Create session
+      this.session = this.driver.session();
+      
+      this.connected = true;
+      this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      return {
+        connected: true,
+        sessionId: this.sessionId,
+        uri: this.uri
+      };
+    } catch (error) {
+      this.log('error', 'Neo4j connection failed', { error: error.message });
+      throw error;
+    }
   }
 
   /**
@@ -105,7 +122,27 @@ class KnowledgeGraphPlugin extends BasePlugin {
     
     const nodeId = this.generateNodeId(content, type);
     
-    // Mock storage - replace with real graph operations
+    // Store in Neo4j
+    const query = `
+      CREATE (n:Knowledge {
+        id: $nodeId,
+        content: $content,
+        type: $type,
+        createdAt: datetime(),
+        sessionId: $sessionId,
+        tags: $tags
+      })
+      RETURN n
+    `;
+    
+    const result = await this.session.run(query, {
+      nodeId,
+      content,
+      type,
+      sessionId: this.sessionId,
+      tags
+    });
+    
     const storedNode = {
       id: nodeId,
       content,
@@ -117,10 +154,10 @@ class KnowledgeGraphPlugin extends BasePlugin {
       },
       relationships,
       tags,
-      embedding: await this.generateEmbedding(content)
+      neo4jRecord: result.records[0]
     };
     
-    this.log('info', 'Knowledge stored in graph', {
+    this.log('info', 'Knowledge stored in Neo4j', {
       nodeId,
       type,
       relationshipCount: relationships.length,
@@ -152,8 +189,8 @@ class KnowledgeGraphPlugin extends BasePlugin {
       return this.queryCache.get(cacheKey);
     }
     
-    // Mock query - replace with real graph query
-    const results = await this.performGraphQuery(searchQuery, {
+    // Query Neo4j
+    const results = await this.performNeo4jQuery(searchQuery, {
       type,
       limit,
       includeRelationships,
@@ -352,26 +389,49 @@ class KnowledgeGraphPlugin extends BasePlugin {
     return JSON.stringify(query);
   }
 
-  async performGraphQuery(query, options) {
-    // Mock graph query - replace with real database queries
-    return [
-      {
-        id: `node_${Date.now()}_1`,
-        content: `Mock knowledge related to: ${query}`,
-        type: 'concept',
-        relevance: 0.9,
-        relationships: options.includeRelationships ? [
-          { type: 'relates_to', target: 'related_concept_1', strength: 0.8 }
-        ] : []
-      },
-      {
-        id: `node_${Date.now()}_2`,
-        content: `Additional context for: ${query}`,
-        type: 'fact',
-        relevance: 0.7,
-        relationships: options.includeRelationships ? [] : []
-      }
-    ];
+  async performNeo4jQuery(searchQuery, options) {
+    const { type, limit, includeRelationships } = options;
+    
+    // Build Cypher query
+    let cypher = `
+      MATCH (n:Knowledge)
+      WHERE n.content CONTAINS $searchQuery
+    `;
+    
+    if (type) {
+      cypher += ` AND n.type = $type`;
+    }
+    
+    if (includeRelationships) {
+      cypher += `
+        OPTIONAL MATCH (n)-[r]-(related:Knowledge)
+        RETURN n, collect({type: type(r), target: related.id, content: related.content}) as relationships
+      `;
+    } else {
+      cypher += ` RETURN n, [] as relationships`;
+    }
+    
+    cypher += ` LIMIT $limit`;
+    
+    const result = await this.session.run(cypher, {
+      searchQuery,
+      type,
+      limit: neo4j.int(limit)
+    });
+    
+    return result.records.map(record => {
+      const node = record.get('n').properties;
+      const relationships = record.get('relationships');
+      
+      return {
+        id: node.id,
+        content: node.content,
+        type: node.type,
+        createdAt: node.createdAt,
+        relevance: 0.8, // Could be calculated based on search relevance
+        relationships: relationships || []
+      };
+    });
   }
 
   async traverseGraph(concept, options) {
@@ -428,10 +488,21 @@ class KnowledgeGraphPlugin extends BasePlugin {
 
   async cleanup() {
     await super.cleanup();
+    
+    if (this.session) {
+      await this.session.close();
+      this.session = null;
+    }
+    
+    if (this.driver) {
+      await this.driver.close();
+      this.driver = null;
+    }
+    
     this.connected = false;
     this.sessionId = null;
     this.queryCache.clear();
-    this.log('info', 'Knowledge graph plugin cleaned up');
+    this.log('info', 'Neo4j knowledge graph plugin cleaned up');
   }
 }
 
