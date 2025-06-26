@@ -1,90 +1,113 @@
-# Streamlit Knowledge Graph Dashboard
+# Knowledge Graph Dashboard
 
-Interactive visualization dashboard for Tool Claude Conduit's knowledge graph, integrating with both Neo4j and claude-conduit's MCP capabilities.
+A simple, interactive web dashboard for visualizing and exploring the Tool Claude Conduit knowledge graph.
 
-## Features
+## Quick Start
 
-### Core Visualizations
-- **Knowledge Graph Explorer**: Interactive network visualization with filtering and search
-- **Process Flow Diagrams**: Sankey diagrams for PR workflows and agent coordination
-- **Analytics Dashboard**: Graph metrics, growth tracking, and usage patterns
-- **Query Explorer**: Execute custom Cypher queries with predefined templates
+```bash
+# 1. Automated setup (recommended)
+./test-runner.sh setup
 
-### MCP Integration (via claude-conduit)
-- **MCP Tools Explorer**: Browse and execute available MCP server tools
-- **Task Planning**: FLOW methodology implementation with taskmaster-ai
-- **Cloud Memory**: Persistent storage for plans and insights
-- **Live Status**: Real-time claude-conduit connection monitoring
+# 2. Start the dashboard
+./test-runner.sh run
+```
 
-## Prerequisites
+The dashboard opens at http://localhost:8501
 
-1. **Neo4j Database** running on localhost:7687
-2. **claude-conduit** server running on localhost:3001
-3. **Python 3.8+** with pip
+## What You Can Do
+
+- **📊 Explore Knowledge Graphs**: Interactive network visualizations
+- **🔄 View Process Flows**: PR workflows and agent coordination
+- **📈 Check Analytics**: System metrics and growth tracking  
+- **🔍 Run Queries**: Execute custom database queries
+- **🛠️ Use MCP Tools**: Access advanced AI capabilities
+- **📋 Plan Tasks**: FLOW methodology with AI assistance
+
+## Requirements
+
+- **Python 3.8+**
+- **Optional**: Neo4j database (for graph features)
+- **Optional**: claude-conduit server (for MCP features)
 
 ## Installation
 
+### Easy Way (Uses Virtual Environment)
 ```bash
-cd dashboard
+./test-runner.sh setup
+```
+
+### Manual Way
+```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+```
+
+## Running
+
+### Easy Way
+```bash
+./test-runner.sh run
+```
+
+### Manual Way
+```bash
+source venv/bin/activate
+streamlit run app.py
+```
+
+## Testing
+
+```bash
+# Run all tests
+./test-runner.sh test
+
+# Just check if everything works
+./test-runner.sh check
+
+# See what you should test manually
+./test-runner.sh test --manual
+```
+
+## Optional Services
+
+The dashboard works standalone, but features improve with services:
+
+**Neo4j Database** (for graph features):
+```bash
+brew install neo4j
+brew services start neo4j
+```
+
+**claude-conduit Server** (for AI features):
+```bash
+cd .. && npm start
 ```
 
 ## Configuration
 
-Set environment variables (optional):
+Set these if using non-default values:
 ```bash
 export NEO4J_URI="bolt://localhost:7687"
-export NEO4J_USER="neo4j"
+export NEO4J_USER="neo4j" 
 export NEO4J_PASSWORD="password"
 export CONDUIT_URL="http://localhost:3001"
 ```
 
-## Running the Dashboard
+## Help
 
 ```bash
-streamlit run app.py
+./test-runner.sh help    # See all options
+make help                # See make targets
 ```
 
-The dashboard will open at http://localhost:8501
+## Files
 
-## Usage Guide
+- `app.py` - Main dashboard application
+- `test-runner.sh` - Setup, testing, and run script
+- `requirements.txt` - Python dependencies
+- `venv/` - Virtual environment (auto-created, not in git)
 
-### Knowledge Graph Visualization
-1. Select node and relationship types to display
-2. Adjust layout (Force-directed, Hierarchical, etc.)
-3. Use search to find specific nodes
-4. Click nodes for details
+## Educational Philosophy
 
-### MCP Tools
-1. Ensure claude-conduit is running
-2. Navigate to "MCP Tools" page
-3. Browse available servers and tools
-4. Execute tools with JSON payloads
-
-### Task Planning
-1. Navigate to "Task Planning" page
-2. Enter task description
-3. Generate FLOW plan or get planning boost
-4. Save plans to cloud memory
-
-## Architecture
-
-- **app.py**: Main Streamlit application
-- **neo4j_connection.py**: Neo4j database interface
-- **visualizations.py**: Graph visualization components
-- **claude_conduit.py**: HTTP client for claude-conduit integration
-
-## Demo Use Cases
-
-As specified in issue #20:
-- PR Workflow tracking
-- Project Dependencies visualization
-- Knowledge Discovery
-- Multi-Agent Coordination
-
-## Development
-
-To extend the dashboard:
-1. Add new visualization types in `visualizations.py`
-2. Add new pages in `app.py`
-3. Extend claude-conduit integration for new MCP servers
+This dashboard follows the **FLOW methodology** (Following Logical Work Order) and **VIBE system** (Verify, and Inspirational Behaviors Emerge) - making development transparent and teachable.
