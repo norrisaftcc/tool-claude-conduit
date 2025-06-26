@@ -1,14 +1,35 @@
-# Virtual environment
+# Virtual environments (comprehensive)
 venv/
 env/
+.venv/
 .env/
+ENV/
+env.bak/
+venv.bak/
 
-# Python cache
+# Python cache and bytecode
 __pycache__/
+*.py[cod]
+*$py.class
 *.pyc
 *.pyo
 *.pyd
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # Streamlit
 .streamlit/
@@ -28,6 +49,18 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Environment variables and secrets
+.env*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.txt
+.secrets
+auth.json
+credentials.json
 
 # Temporary files
 *.tmp
