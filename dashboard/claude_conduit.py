@@ -21,7 +21,7 @@ class ClaudeConduitClient:
             response = self.session.get(f"{self.base_url}/fortune")
             response.raise_for_status()
             return response.json().get("fortune", "No fortune available")
-        except:
+        except requests.exceptions.RequestException:
             return "Fortune service unavailable"
     
     def get_available_tools(self) -> Dict[str, Any]:

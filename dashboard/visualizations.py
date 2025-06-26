@@ -72,6 +72,30 @@ class GraphVisualizer:
                 }
             }
             """)
+        elif layout == "Circular":
+            net.set_options("""
+            var options = {
+                "layout": {
+                    "randomSeed": 2,
+                    "improvedLayout": true
+                },
+                "physics": {
+                    "enabled": false
+                }
+            }
+            """)
+        elif layout == "Random":
+            net.set_options("""
+            var options = {
+                "layout": {
+                    "randomSeed": undefined,
+                    "improvedLayout": false
+                }
+            }
+            """)
+        else:
+            # Default fallback for unsupported layouts
+            net.force_atlas_2based()
         
         # Add nodes and edges
         nodes_added = set()

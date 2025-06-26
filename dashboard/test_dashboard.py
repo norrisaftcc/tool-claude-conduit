@@ -33,7 +33,10 @@ class TestNeo4jConnection(unittest.TestCase):
         """Set up test fixtures"""
         self.mock_driver = Mock()
         self.mock_session = Mock()
-        self.mock_driver.session.return_value.__enter__.return_value = self.mock_session
+        # Properly mock context manager for Neo4j session
+        self.mock_driver.session.return_value = MagicMock()
+        self.mock_driver.session.return_value.__enter__ = Mock(return_value=self.mock_session)
+        self.mock_driver.session.return_value.__exit__ = Mock(return_value=None)
         
     @patch('neo4j_connection.GraphDatabase.driver')
     def test_connection_initialization(self, mock_driver):
@@ -50,10 +53,10 @@ class TestNeo4jConnection(unittest.TestCase):
         """Test query execution"""
         mock_driver.return_value = self.mock_driver
         
-        # Mock query result
-        mock_result = Mock()
-        mock_result.data.return_value = [{"count": 42}]
-        self.mock_session.run.return_value = [mock_result]
+        # Mock query result - return list of records, each with .data() method
+        mock_record = Mock()
+        mock_record.data.return_value = {"count": 42}
+        self.mock_session.run.return_value = [mock_record]
         
         conn = Neo4jConnection("bolt://localhost:7687", "neo4j", "password")
         result = conn.execute_query("MATCH (n) RETURN count(n) as count")
@@ -116,7 +119,8 @@ class TestClaudeConduitClient(unittest.TestCase):
     @patch('claude_conduit.requests.Session.get')
     def test_health_check_failure(self, mock_get):
         """Test health check failure handling"""
-        mock_get.side_effect = Exception("Connection refused")
+        import requests
+        mock_get.side_effect = requests.exceptions.ConnectionError("Connection refused")
         
         result = self.client.health_check()
         
