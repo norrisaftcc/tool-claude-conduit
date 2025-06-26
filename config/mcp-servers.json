@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "node",
+      "args": ["./mcp-servers/filesystem/index.js"],
+      "description": "File system operations - read, write, list directories",
+      "capabilities": ["file_operations", "directory_listing"],
+      "envVars": {
+        "FILESYSTEM_ROOT": "FILESYSTEM_MCP_PATH"
+      }
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "description": "Web search using Brave Search API",
+      "capabilities": ["web_search", "real_time_info"],
+      "envVars": {
+        "BRAVE_API_KEY": "BRAVE_API_KEY"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "description": "GitHub repository operations and API access",
+      "capabilities": ["github_api", "repository_management"],
+      "envVars": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "GITHUB_MCP_TOKEN"
+      }
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "memory"],
+      "description": "SQLite database operations for temporary data storage",
+      "capabilities": ["database_operations", "sql_queries"],
+      "envVars": {}
+    },
+    "memory": {
+      "command": "node",
+      "args": ["./mcp-servers/memory/index.js"],
+      "description": "Persistent memory and context storage",
+      "capabilities": ["context_storage", "memory_retrieval"],
+      "envVars": {
+        "MEMORY_STORAGE_URL": "CLOUD_MEMORY_URL",
+        "MEMORY_API_KEY": "CLOUD_MEMORY_API_KEY"
+      }
+    }
+  },
+  "serverConfig": {
+    "defaultTimeout": 30000,
+    "maxRetries": 3,
+    "reconnectDelay": 5000,
+    "enableLogging": true
+  }
+}
