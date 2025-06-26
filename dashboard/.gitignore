@@ -1,0 +1,67 @@
+# Virtual environments (comprehensive)
+venv/
+env/
+.venv/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Streamlit
+.streamlit/
+
+# Demo data scripts (auto-generated)
+seed_demo.py
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Environment variables and secrets
+.env*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.txt
+.secrets
+auth.json
+credentials.json
+
+# Temporary files
+*.tmp
+*.temp
