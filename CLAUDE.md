@@ -77,12 +77,16 @@ echo "ANTHROPIC_API_KEY=sk-ant-api03-your-key" >> .env
 - Health monitoring
 - FLOW methodology fortune system
 
-### 🐰 SIMULATED (Demo-ware)
-- Persona system (all plugins are placeholders)
-- Memory/knowledge graph features
-- Advanced planning tools
+### 🎷🤖 SIMULATED (Demo-ware)
+- **Persona system**: Loads profiles but no functional plugins (Issue #38)
+- **Planning boost**: Returns mock planning data (needs real planning plugins)
+- **Memory/knowledge graph**: All memory features are FunkBot stubs 🎷🤖
+- **Advanced MCP servers**: mcp-taskmaster, mcp-scout, memory-rag are not implemented
+- **Multi-agent workflows**: Claims exist but no actual agents available
 
-See Issues #30-32 for cleanup roadmap.
+**What this means:** These features return responses but do no real work. All are clearly marked with 🎷🤖 or FunkBot metadata.
+
+See Issue #36 for systematic cleanup roadmap.
 
 ## Common Issues
 
@@ -137,7 +141,7 @@ This is the same system your Claude assistant uses. The workflow is designed to 
 - **API Usage Guide**: `docs/API_USAGE_GUIDE.md`
 - **Development Workflow**: `docs/DEVELOPMENT_WORKFLOW.md`
 - **Issues**: See GitHub Issues for known limitations
-- **White Rabbit Protocol**: 🐰 emoji marks all simulated features
+- **FunkBot Protocol**: 🎷🤖 emoji marks all FunkBot simulated features
 
 ---
 
@@ -148,13 +152,15 @@ This is the same system your Claude assistant uses. The workflow is designed to 
 ### MCP Server Execution
 POST requests to `/execute/{server}/{tool}` with JSON payloads enable tool execution across different MCP servers.
 
-### Persistent Context
-The cloud-memory server maintains hierarchical project data, learning objectives, and methodology progress across sessions.
+### 🎷🤖 Persistent Context (SIMULATED)
+**Status:** FunkBot stub 🎷🤖 - No actual persistent storage implemented  
+**Reality:** Claims about cloud-memory server are demo-ware. No hierarchical project data exists.  
+**Issue:** #38 for strategic decision on implementation vs removal.
 
-### Multi-Agent Workflows
-- Devil's advocate analysis for assumption validation
-- Enhanced code review with security and educational assessment  
-- FLOW methodology automation across all development phases
+### 🎷🤖 Multi-Agent Workflows (SIMULATED)  
+**Status:** FunkBot stub 🎷🤖 - No actual agents exist
+**Reality:** Claims about devil's advocate analysis and enhanced code review are demo-ware
+**Issue:** #38 addresses agent architecture prerequisites
 
 ## Development Workflow
 
@@ -233,14 +239,20 @@ This project follows professional GitHub flow with **FLOW Methodology** integrat
 - Clear error messages and helpful guidance
 - Performance considerations and resource management
 
-## Next Steps for Implementation
+## Current Implementation Status
 
-The current reference implementation needs reconstruction:
-1. Recreate main server files (package.json, index.js)
-2. Implement Express routes for all endpoints
-3. Add MCP client integration using @modelcontextprotocol/sdk
-4. Build fortune system with educational content
-5. Add proper error handling and logging
-6. Implement configuration file reading
+✅ **Actually Working:**
+- Express server with all major routes implemented
+- MCP client with real filesystem and brave-search integration  
+- Fortune system with 45+ educational quotes
+- Configuration validation and error handling
+- FunkBot Protocol for transparency markers
+- Health monitoring and tool discovery
 
-The goal is to leverage these enhanced AI capabilities, especially taskmaster-ai project management, to build a superior next iteration of claude-conduit.
+🎷🤖 **FunkBot Stubs Requiring Decision:**
+- Persona system architecture (exists but loads no functional plugins)
+- Advanced MCP servers (taskmaster-ai, scout, memory-rag not implemented)
+- Multi-agent workflows (claimed but no agents exist)
+- Cloud memory features (placeholder endpoints only)
+
+📋 **Next Steps:** See Issue #36 for systematic demo-ware cleanup plan.
