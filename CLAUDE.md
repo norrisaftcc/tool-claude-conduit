@@ -1,77 +1,147 @@
-# CLAUDE.md
+# Claude Integration Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This document explains how to use claude-conduit as a Claude assistant and provides the essential workflow for getting started.
 
-## Project Overview
+## Quick Activation
 
-This repository aims to build the next iteration of claude-conduit, an HTTP bridge that connects Claude Code to Model Context Protocol (MCP) servers. The project enhances AI capabilities through persistent, cross-session tooling integrations.
+### 1. Start Claude-Conduit
+```bash
+cd tool-claude-conduit
+npm start
+```
 
-## Reference Implementation
+Server starts on `http://localhost:3001`
 
-The `reference_implementation/` directory contains:
-- **claude-conduit/**: Node.js HTTP bridge server (currently only node_modules present - main files need to be recreated)
-- **guidance.md**: Comprehensive documentation of the claude-conduit system architecture and capabilities
+### 2. Verify Everything Works
+```bash
+# Health check
+curl http://localhost:3001/health
 
-## Architecture Overview
+# Test basic functionality (no API keys needed)
+curl -X POST http://localhost:3001/execute/filesystem/list_directory \
+  -H "Content-Type: application/json" \
+  -d '{"path": "."}'
+```
 
-### Core System Components
+### 3. Add API Keys (Optional)
+```bash
+# Add to .env file (never commit this!)
+echo "BRAVE_API_KEY=your-key-here" >> .env
+echo "ANTHROPIC_API_KEY=sk-ant-api03-your-key" >> .env
+```
 
-**claude-conduit HTTP Bridge**
-- Express.js server running on `localhost:3001`
-- Routes: `/health`, `/tools`, `/execute/{server}/{tool}`, `/fortune`
-- Integrates with MCP servers via @modelcontextprotocol/sdk
-- Reads MCP configuration from `~/.config/claude/claude_desktop_config.json`
+## What Claude Can Do
 
-**Supported MCP Servers**
-- **taskmaster-ai**: Advanced task planning and project management
-- **filesystem**: Enhanced file operations and codebase analysis
-- **scout**: Advanced search and research capabilities  
-- **cloud-memory**: Persistent project context via Railway app (https://csi-prism-remote-mcp-production.up.railway.app/)
+### ✅ Works Without API Keys
+- **Filesystem operations**: Read, write, list directory contents
+- **Server management**: Health checks, tool discovery
+- **Basic testing**: Verify claude-conduit functionality
+
+### ⚡ Enhanced With API Keys
+- **Web search**: Real Brave Search results
+- **Claude API**: Advanced reasoning capabilities
+- **Full tool suite**: All MCP servers operational
+
+## Workflow for Claude Assistants
+
+### When Checking In With Claude-Conduit
+
+1. **Always verify server status first**:
+   ```bash
+   curl http://localhost:3001/health
+   ```
+
+2. **Test basic functionality**:
+   ```bash
+   curl http://localhost:3001/tools
+   ```
+
+3. **Use real examples** for testing:
+   ```bash
+   # Test filesystem
+   curl -X POST http://localhost:3001/execute/filesystem/read_file \
+     -H "Content-Type: application/json" \
+     -d '{"path": "./package.json"}'
+   
+   # Test web search (if API key available)
+   curl -X POST http://localhost:3001/execute/brave-search/search \
+     -H "Content-Type: application/json" \
+     -d '{"query": "your search terms", "count": 3}'
+   ```
+
+## Development Status
+
+### ✅ Fully Functional
+- Filesystem tools (read_file, write_file, list_directory)
+- Brave Search integration
+- Health monitoring
+- FLOW methodology fortune system
+
+### 🐰 SIMULATED (Demo-ware)
+- Persona system (all plugins are placeholders)
+- Memory/knowledge graph features
+- Advanced planning tools
+
+See Issues #30-32 for cleanup roadmap.
+
+## Common Issues
+
+### Server Won't Start
+```bash
+# Kill existing process
+pkill -f "node.*index.js"
+
+# Restart
+npm start
+```
+
+### Getting Mock Results
+- **Expected**: For tools requiring API keys when keys are missing
+- **Problem**: If filesystem tools return mocks (file a bug)
+
+### Permission Errors
+- Ensure claude-conduit has read/write access to target paths
+- Check file permissions: `ls -la /path/to/file`
+
+## Architecture
+
+```
+Claude Assistant → HTTP API → MCP Client → MCP Servers → Real Tools
+                            └─ Graceful → Mock Tools (when needed)
+```
 
 ### Educational Framework Integration
 
 The system implements **FLOW Methodology** (Following Logical Work Order):
-1. **LEARN** - Research through scout
-2. **UNDERSTAND** - Devil's advocate analysis via taskmaster-ai
-3. **PLAN** - Structured breakdowns via taskmaster-ai
-4. **EXECUTE** - Implementation with enhanced tools
-5. **VERIFY** - Multi-agent validation
-6. **DOCUMENT** - Knowledge capture to cloud-memory
+1. **LEARN** - Research and discovery
+2. **UNDERSTAND** - Analysis and planning
+3. **PLAN** - Structured task breakdown
+4. **EXECUTE** - Implementation with testing
+5. **VERIFY** - Validation and review
+6. **DOCUMENT** - Knowledge capture
 
 **VIBE System** (Verify, and Inspirational Behaviors Emerge):
 - Fortune system with 45+ educational quotes covering FLOW, SAFE framework, SOLID principles
 - Transparent processes become teaching moments
 - Accessible via `GET /fortune` endpoint
 
-## Development Commands
+## For Human Developers
 
-### Starting claude-conduit Reference Implementation
-```bash
-cd reference_implementation/claude-conduit
-npm install
-npm start
-```
+This is the same system your Claude assistant uses. The workflow is designed to be:
+- **Consistent**: Same commands work for humans and AI
+- **Transparent**: Clear distinction between real and simulated features
+- **Incremental**: Works without all dependencies configured
 
-### Health Checks
-```bash
-# Test claude-conduit connectivity
-curl http://localhost:3001/health
+## References
 
-# Check available MCP tools
-curl http://localhost:3001/tools
+- **API Usage Guide**: `docs/API_USAGE_GUIDE.md`
+- **Development Workflow**: `docs/DEVELOPMENT_WORKFLOW.md`
+- **Issues**: See GitHub Issues for known limitations
+- **White Rabbit Protocol**: 🐰 emoji marks all simulated features
 
-# Verify cloud memory access
-curl https://csi-prism-remote-mcp-production.up.railway.app/health
-```
+---
 
-## Required Environment Variables
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-api03-..."
-export MCP_CONFIG_PATH="~/.config/claude/claude_desktop_config.json"
-export CONDUIT_PORT="3001"  # Optional
-export LOG_LEVEL="info"     # Optional
-```
+*This guide ensures consistent claude-conduit usage across all Claude instances and human developers.*
 
 ## Key Implementation Patterns
 
