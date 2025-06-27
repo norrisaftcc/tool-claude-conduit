@@ -165,7 +165,7 @@ app.post('/execute/:server/:tool', async (req, res) => {
     // Try MCP server execution first
     const result = await mcpClient.executeTool(server, tool, payload);
     
-    // White Rabbit Protocol: Surface simulation metadata
+    // FunkBot Protocol 🎷🤖: Surface simulation metadata
     const response = {
       status: 'success',
       result,
@@ -175,7 +175,7 @@ app.post('/execute/:server/:tool', async (req, res) => {
       timestamp: new Date().toISOString()
     };
 
-    // Add White Rabbit metadata if present
+    // Add FunkBot Protocol 🎷🤖 metadata if present
     if (result.funkbot) {
       response.funkbot = result.funkbot;
       
