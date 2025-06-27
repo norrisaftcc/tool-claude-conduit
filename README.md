@@ -1,2 +1,2 @@
 # tool-claude-conduit
-claude-conduit (Claude named it, good bot)
+claude-conduit is an initial attempt at experimenting with MCP.
