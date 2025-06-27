@@ -84,7 +84,7 @@ All tools return mock responses (useful for testing the API structure).
 }
 ```
 
-### API-Dependent Tool (Degraded Mode)
+### FunkBot Stub Response (Simulated) 🎷🤖
 ```json
 {
   "status": "success",
@@ -95,7 +95,18 @@ All tools return mock responses (useful for testing the API structure).
     "args": {"query": "test"},
     "result": "Mock result from brave-search/echo",
     "timestamp": "2025-06-26T23:37:53.662Z",
-    "executionTime": 234
+    "executionTime": 234,
+    "white_rabbit": {
+      "is_simulated": true,
+      "reason": "missing_api_key",
+      "warning": "🎷🤖 SIMULATED RESULT - This is mock data, not real output",
+      "guidance": "Add BRAVE_API_KEY to .env file for real web search"
+    }
+  },
+  "white_rabbit": {
+    "is_simulated": true,
+    "reason": "missing_api_key",
+    "server_status": "degraded"
   },
   "executedVia": "mcp"
 }
@@ -116,21 +127,26 @@ All tools return mock responses (useful for testing the API structure).
 - `write_file` - Write file contents  
 - `list_directory` - List directory entries
 
-### Brave Search (⚠️ Requires BRAVE_API_KEY)
-- `echo` - Mock tool when API key missing
-- Real search tools available with API key
+### Brave Search (⚡ Conditional - Requires BRAVE_API_KEY)
+- `search`, `web_search` - Real web search with API key
+- `echo` - FunkBot stub 🎷🤖 when API key missing
 
-### GitHub (⚠️ Requires GITHUB_PERSONAL_ACCESS_TOKEN)
-- `echo` - Mock tool when API key missing
-- Real GitHub API tools available with token
+### GitHub (🎷🤖 FunkBot Stub - Not Implemented)
+- `echo` - FunkBot stub regardless of API key
+- **Status**: GitHub integration not implemented yet
 
-### SQLite (🔄 Should work without API keys - needs implementation)
-- `echo` - Currently using mock tool
-- Database operations should work without external APIs
+### SQLite (🎷🤖 FunkBot Stub - Not Implemented)
+- `echo` - FunkBot stub (should work without APIs but not implemented)
+- **Status**: Database operations need implementation
 
-### Memory (⚠️ Requires cloud service API keys)
-- `echo` - Mock tool when API key missing
-- Persistent storage available with cloud configuration
+### Memory (🎷🤖 FunkBot Stub - Not Implemented)
+- `echo` - FunkBot stub regardless of API keys
+- **Status**: Cloud storage integration not implemented
+
+### Advanced MCP Servers (🎷🤖 All FunkBot Stubs)
+- `taskmaster-ai` - Project management (not implemented)
+- `scout` - Research tools (not implemented)
+- All return `echo` responses with FunkBot metadata
 
 ## Troubleshooting
 
@@ -146,9 +162,10 @@ pkill -f "node.*index.js"
 npm start
 ```
 
-### Mock Results Instead of Real Data
-- **Filesystem tools**: Should return real data (if getting mocks, file a bug)
-- **API-dependent tools**: Expected behavior without API keys
+### FunkBot Stubs Instead of Real Data
+- **Filesystem tools**: Should return real data (if getting FunkBot stubs, file a bug)
+- **API-dependent tools**: Expected to show FunkBot stubs 🎷🤖 without API keys
+- **Check FunkBot metadata** in responses for transparency information
 - **Check server logs** for configuration issues
 
 ### Permission Errors
@@ -179,4 +196,14 @@ curl -X POST http://localhost:3001/execute/your-server/your-tool \
   -d '{"your": "arguments"}'
 ```
 
-This approach ensures claude-conduit can be developed and tested incrementally, even without all external service dependencies configured.
+This approach ensures claude-conduit can be developed and tested incrementally, with transparent FunkBot stubs 🎷🤖 for unimplemented features. Users are never misled about functionality.
+
+## FunkBot Protocol 🎷🤖
+
+All simulated features include FunkBot metadata:
+- `white_rabbit.is_simulated: true` indicates mock data
+- `white_rabbit.reason` explains why it's simulated
+- `white_rabbit.guidance` provides setup instructions
+- HTTP headers include `X-Claude-Conduit-Mode: simulation`
+
+This transparency ensures users understand what's real vs demo.
