@@ -133,7 +133,7 @@ app.post('/planning-boost', async (req, res) => {
       status: 'success',
       planningBoost: result,
       vibe: 'FLOW methodology applied - transparent planning creates learning opportunities',
-      white_rabbit: {
+      funkbot: {
         is_simulated: true,
         reason: 'feature_not_implemented',
         warning: '🐰 SIMULATED RESULT - Planning boost requires plugin implementation',
@@ -146,7 +146,7 @@ app.post('/planning-boost', async (req, res) => {
       error: 'Planning boost failed',
       message: error.message,
       suggestion: 'Try loading the planning-boost profile first',
-      white_rabbit: {
+      funkbot: {
         is_simulated: true,
         reason: 'no_planning_plugins_available',
         warning: '🐰 SIMULATED FAILURE - Planning plugins not implemented',
@@ -176,15 +176,15 @@ app.post('/execute/:server/:tool', async (req, res) => {
     };
 
     // Add White Rabbit metadata if present
-    if (result.white_rabbit) {
-      response.white_rabbit = result.white_rabbit;
+    if (result.funkbot) {
+      response.funkbot = result.funkbot;
       
       // Add response headers for transparent simulation state
-      if (result.white_rabbit.is_simulated) {
+      if (result.funkbot.is_simulated) {
         res.set({
           'X-Claude-Conduit-Mode': 'simulation',
           'X-Claude-Conduit-Warning': 'mock-data',
-          'X-Claude-Conduit-Server-Status': result.white_rabbit.server_status || 'degraded'
+          'X-Claude-Conduit-Server-Status': result.funkbot.server_status || 'degraded'
         });
       }
     }
@@ -204,7 +204,7 @@ app.post('/execute/:server/:tool', async (req, res) => {
           server,
           tool,
           executedVia: 'plugin',
-          white_rabbit: {
+          funkbot: {
             is_simulated: true,
             reason: 'plugin_fallback',
             warning: '🐰 SIMULATED RESULT - Plugin system fallback (MCP server unavailable)',
@@ -223,7 +223,7 @@ app.post('/execute/:server/:tool', async (req, res) => {
         server,
         tool,
         suggestion: 'Check available servers/tools with GET /tools',
-        white_rabbit: {
+        funkbot: {
           is_simulated: false,
           reason: 'execution_failed',
           warning: '❌ EXECUTION FAILED - Neither MCP server nor plugin available',
