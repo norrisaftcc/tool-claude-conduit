@@ -133,6 +133,12 @@ app.post('/planning-boost', async (req, res) => {
       status: 'success',
       planningBoost: result,
       vibe: 'FLOW methodology applied - transparent planning creates learning opportunities',
+      funkbot: {
+        is_simulated: true,
+        reason: 'feature_not_implemented',
+        warning: '🐰 SIMULATED RESULT - Planning boost requires plugin implementation',
+        guidance: 'Planning-boost functionality needs mcp-taskmaster and planning-flow plugins'
+      },
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -140,6 +146,12 @@ app.post('/planning-boost', async (req, res) => {
       error: 'Planning boost failed',
       message: error.message,
       suggestion: 'Try loading the planning-boost profile first',
+      funkbot: {
+        is_simulated: true,
+        reason: 'no_planning_plugins_available',
+        warning: '🐰 SIMULATED FAILURE - Planning plugins not implemented',
+        guidance: 'This feature requires implementing mcp-taskmaster and planning-flow plugins'
+      },
       timestamp: new Date().toISOString()
     });
   }
@@ -153,14 +165,31 @@ app.post('/execute/:server/:tool', async (req, res) => {
     // Try MCP server execution first
     const result = await mcpClient.executeTool(server, tool, payload);
     
-    res.json({
+    // FunkBot Protocol 🎷🤖: Surface simulation metadata
+    const response = {
       status: 'success',
       result,
       server,
       tool,
       executedVia: 'mcp',
       timestamp: new Date().toISOString()
-    });
+    };
+
+    // Add FunkBot Protocol 🎷🤖 metadata if present
+    if (result.funkbot) {
+      response.funkbot = result.funkbot;
+      
+      // Add response headers for transparent simulation state
+      if (result.funkbot.is_simulated) {
+        res.set({
+          'X-Claude-Conduit-Mode': 'simulation',
+          'X-Claude-Conduit-Warning': 'mock-data',
+          'X-Claude-Conduit-Server-Status': result.funkbot.server_status || 'degraded'
+        });
+      }
+    }
+    
+    res.json(response);
     
   } catch (mcpError) {
     // If MCP fails, try plugin system
@@ -175,6 +204,12 @@ app.post('/execute/:server/:tool', async (req, res) => {
           server,
           tool,
           executedVia: 'plugin',
+          funkbot: {
+            is_simulated: true,
+            reason: 'plugin_fallback',
+            warning: '🐰 SIMULATED RESULT - Plugin system fallback (MCP server unavailable)',
+            guidance: 'Check MCP server configuration and availability'
+          },
           timestamp: new Date().toISOString()
         });
       } else {
@@ -188,6 +223,12 @@ app.post('/execute/:server/:tool', async (req, res) => {
         server,
         tool,
         suggestion: 'Check available servers/tools with GET /tools',
+        funkbot: {
+          is_simulated: false,
+          reason: 'execution_failed',
+          warning: '❌ EXECUTION FAILED - Neither MCP server nor plugin available',
+          guidance: 'Verify server name and tool availability with GET /tools'
+        },
         timestamp: new Date().toISOString()
       });
     }
