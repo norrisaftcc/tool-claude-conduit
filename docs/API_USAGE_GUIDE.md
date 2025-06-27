@@ -95,18 +95,14 @@ All tools return mock responses (useful for testing the API structure).
     "args": {"query": "test"},
     "result": "Mock result from brave-search/echo",
     "timestamp": "2025-06-26T23:37:53.662Z",
-    "executionTime": 234,
-    "white_rabbit": {
-      "is_simulated": true,
-      "reason": "missing_api_key",
-      "warning": "🎷🤖 SIMULATED RESULT - This is mock data, not real output",
-      "guidance": "Add BRAVE_API_KEY to .env file for real web search"
-    }
+    "executionTime": 234
   },
-  "white_rabbit": {
+  "funkbot": {
     "is_simulated": true,
     "reason": "missing_api_key",
-    "server_status": "degraded"
+    "server_status": "degraded",
+    "warning": "🎷🤖 SIMULATED RESULT - This is mock data, not real output",
+    "guidance": "Add BRAVE_API_KEY to .env file for real web search"
   },
   "executedVia": "mcp"
 }
@@ -201,9 +197,9 @@ This approach ensures claude-conduit can be developed and tested incrementally, 
 ## FunkBot Protocol 🎷🤖
 
 All simulated features include FunkBot metadata:
-- `white_rabbit.is_simulated: true` indicates mock data
-- `white_rabbit.reason` explains why it's simulated
-- `white_rabbit.guidance` provides setup instructions
+- `funkbot.is_simulated: true` indicates mock data
+- `funkbot.reason` explains why it's simulated
+- `funkbot.guidance` provides setup instructions
 - HTTP headers include `X-Claude-Conduit-Mode: simulation`
 
 This transparency ensures users understand what's real vs demo.
