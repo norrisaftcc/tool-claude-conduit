@@ -3,7 +3,7 @@
 // Test Neo4j Knowledge Graph Plugin
 require('dotenv').config();
 
-const KnowledgeGraphPlugin = require('./plugins/knowledge-graph');
+const KnowledgeGraphPlugin = require('../plugins/knowledge-graph');
 
 async function testNeo4jConnection() {
   console.log('🧪 Testing Neo4j Knowledge Graph Plugin');
