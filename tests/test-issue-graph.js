@@ -3,7 +3,7 @@
 // Test storing GitHub issues in Neo4j Knowledge Graph
 require('dotenv').config();
 
-const KnowledgeGraphPlugin = require('./plugins/knowledge-graph');
+const KnowledgeGraphPlugin = require('../plugins/knowledge-graph');
 
 // GitHub issues data structure
 const issues = [
