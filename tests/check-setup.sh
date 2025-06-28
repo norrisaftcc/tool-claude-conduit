@@ -22,7 +22,7 @@ if [ -f "../.env" ]; then
     echo "   ✅ .env file exists"
     
     # Check for Neo4j vars
-    if grep -q "NEO4J_URI=" ../. env 2>/dev/null; then
+    if grep -q "NEO4J_URI=" ../.env 2>/dev/null; then
         echo "   ✅ Neo4j URI is configured"
     else
         echo "   ❌ NEO4J_URI is missing"
