@@ -1,50 +1,76 @@
 # Claude Conduit
 
-HTTP bridge connecting Claude Code to MCP servers with plugin ecosystem.
+**Version 2.0.0 - "The Honest Release"**
 
-## Current Status
+A lightweight HTTP-to-MCP bridge that provides Claude Code with filesystem operations and web search capabilities. Simple, focused, and completely transparent about what it actually does.
 
-### ✅ Fully Functional
-- **Filesystem operations**: Read, write, list directory contents
-- **Brave Search integration**: Real web search with API key
-- **Health monitoring**: Server status and tool discovery
-- **FLOW methodology**: Fortune system with 45+ educational quotes
-- **Configuration validation**: Environment and API key checking
-- **FunkBot Protocol**: Transparent marking of simulated features
+## What It Actually Does
 
-### 🎷🤖 FunkBot Stubs (Simulated)
-- **Persona system**: Loads profiles but no functional plugins
-- **Planning boost**: Returns mock planning data
-- **Memory/knowledge graph**: All memory features are placeholder stubs
-- **Advanced MCP servers**: mcp-taskmaster, mcp-scout, memory-rag not implemented
-- **Multi-agent workflows**: Claims exist but no actual agents available
+This is an HTTP server that bridges Claude Code to Model Context Protocol (MCP) servers. Nothing more, nothing less.
 
-**What this means:** Features marked with 🎷🤖 return responses but perform no real work. This is intentional transparency - we never mislead users about functionality.
+### Real Features (Verified Working)
+- **Filesystem operations**: Read, write, and list directory contents via MCP
+- **Web search**: Brave Search integration when API key is provided
+- **Health monitoring**: Simple endpoint to verify server status
+- **Tool discovery**: Lists available MCP tools and their capabilities
+- **Educational quotes**: FLOW methodology fortune system (45+ quotes)
+
+### What It Doesn't Do
+No artificial intelligence, no planning systems, no personas, no memory graphs, no multi-agent orchestration. This is a straightforward HTTP-to-MCP bridge - exactly what it says on the tin.
 
 ## Quick Start
 
 ```bash
-# Start the server
+# Install and start
+npm install
 npm start
 
-# Test basic functionality (no API keys needed)
+# Verify it works (no API keys needed)
 curl http://localhost:3001/health
 curl -X POST http://localhost:3001/execute/filesystem/list_directory \
   -H "Content-Type: application/json" \
   -d '{"path": "."}'
 
-# Add API keys for enhanced features (optional)
+# Optional: Add Brave Search API key
 echo "BRAVE_API_KEY=your-key-here" >> .env
 ```
 
-## Documentation
+## API Endpoints
 
-- **[CLAUDE.md](./CLAUDE.md)**: Complete integration guide for Claude assistants
-- **[API Usage Guide](./docs/API_USAGE_GUIDE.md)**: Testing without API keys
-- **[Issue #36](https://github.com/norrisaftcc/tool-claude-conduit/issues/36)**: Demo-ware cleanup roadmap
+- `GET /health` - Server status and basic info
+- `GET /fortune` - Random educational quote from FLOW methodology
+- `GET /tools` - List all available MCP tools
+- `POST /execute/{server}/{tool}` - Execute MCP tool with JSON payload
 
-## Philosophy
+### Example Usage
 
-**VIBE**: Verify, and Inspirational Behaviors Emerge - transparent development teaches  
-**FLOW**: Following Logical Work Order for systematic progress  
-**FunkBot Protocol**: 🎷🤖 All simulated features clearly marked to prevent user confusion
+```bash
+# Read a file
+curl -X POST http://localhost:3001/execute/filesystem/read_file \
+  -H "Content-Type: application/json" \
+  -d '{"path": "./package.json"}'
+
+# Search the web (requires BRAVE_API_KEY)
+curl -X POST http://localhost:3001/execute/brave-search/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "MCP protocol documentation", "count": 3}'
+```
+
+## History
+
+This project started as an ambitious multi-agent system with complex persona management, planning algorithms, and various AI integrations. Over time, it accumulated nearly 290,000 lines of aspirational code, most of which was either non-functional demo-ware or overly complex abstractions.
+
+In a comprehensive cleanup effort, we stripped away everything that didn't work or wasn't needed, reducing the codebase from 290k lines to approximately 1,000 lines of honest, functional code. The result is this simple, reliable HTTP-to-MCP bridge that does exactly what it claims to do.
+
+## Requirements
+
+- Node.js 18+
+- Optional: Brave Search API key for web search functionality
+
+## Integration
+
+See [CLAUDE.md](./CLAUDE.md) for complete integration guide with Claude Code.
+
+## License
+
+MIT - Use it, modify it, learn from it.

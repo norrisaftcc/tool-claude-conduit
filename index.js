@@ -6,13 +6,11 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
-const PluginSystem = require('./lib/plugin-system');
 const ConfigValidator = require('./lib/config-validator');
 const MCPClient = require('./lib/mcp-client');
 
 const app = express();
 const PORT = process.env.CONDUIT_PORT || 3001;
-const pluginSystem = new PluginSystem();
 const mcpClient = new MCPClient();
 
 app.use(cors());
@@ -74,7 +72,6 @@ app.get('/fortune', (req, res) => {
 app.get('/tools', async (req, res) => {
   try {
     const mcpTools = mcpClient.getAvailableTools();
-    const loadedPlugins = pluginSystem.getLoadedPlugins();
     const mcpStatus = await mcpClient.healthCheck();
     
     res.json({
@@ -83,8 +80,7 @@ app.get('/tools', async (req, res) => {
         servers: mcpTools,
         health: mcpStatus
       },
-      plugins: loadedPlugins,
-      totalCount: Object.keys(mcpTools).length + loadedPlugins.length,
+      totalCount: Object.keys(mcpTools).length,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -96,66 +92,7 @@ app.get('/tools', async (req, res) => {
   }
 });
 
-app.get('/profiles', (req, res) => {
-  res.json({
-    status: 'success',
-    profiles: pluginSystem.getAvailableProfiles(),
-    defaultProfile: 'senior-developer',
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.post('/profile/:profileName', async (req, res) => {
-  const { profileName } = req.params;
-  const config = req.body;
-  
-  try {
-    const result = await pluginSystem.loadProfile(profileName, config);
-    res.json({
-      status: 'success',
-      ...result,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(400).json({
-      error: 'Profile loading failed',
-      message: error.message,
-      profileName,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-app.post('/planning-boost', async (req, res) => {
-  try {
-    const result = await pluginSystem.handlePlanningBoost(req.body);
-    res.json({
-      status: 'success',
-      planningBoost: result,
-      vibe: 'FLOW methodology applied - transparent planning creates learning opportunities',
-      funkbot: {
-        is_simulated: true,
-        reason: 'feature_not_implemented',
-        warning: '🐰 SIMULATED RESULT - Planning boost requires plugin implementation',
-        guidance: 'Planning-boost functionality needs mcp-taskmaster and planning-flow plugins'
-      },
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: 'Planning boost failed',
-      message: error.message,
-      suggestion: 'Try loading the planning-boost profile first',
-      funkbot: {
-        is_simulated: true,
-        reason: 'no_planning_plugins_available',
-        warning: '🐰 SIMULATED FAILURE - Planning plugins not implemented',
-        guidance: 'This feature requires implementing mcp-taskmaster and planning-flow plugins'
-      },
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+// DELETED: All profile and planning-boost endpoints (FunkBot stubs removed)
 
 app.post('/execute/:server/:tool', async (req, res) => {
   const { server, tool } = req.params;
@@ -192,46 +129,14 @@ app.post('/execute/:server/:tool', async (req, res) => {
     res.json(response);
     
   } catch (mcpError) {
-    // If MCP fails, try plugin system
-    try {
-      const plugin = pluginSystem.getPlugin(server);
-      if (plugin) {
-        const result = await pluginSystem.executePlugin(server, tool, payload);
-        
-        res.json({
-          status: 'success',
-          result,
-          server,
-          tool,
-          executedVia: 'plugin',
-          funkbot: {
-            is_simulated: true,
-            reason: 'plugin_fallback',
-            warning: '🐰 SIMULATED RESULT - Plugin system fallback (MCP server unavailable)',
-            guidance: 'Check MCP server configuration and availability'
-          },
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        throw new Error(`No server or plugin found: ${server}`);
-      }
-    } catch (pluginError) {
-      res.status(404).json({
-        error: 'Execution failed',
-        mcpError: mcpError.message,
-        pluginError: pluginError.message,
-        server,
-        tool,
-        suggestion: 'Check available servers/tools with GET /tools',
-        funkbot: {
-          is_simulated: false,
-          reason: 'execution_failed',
-          warning: '❌ EXECUTION FAILED - Neither MCP server nor plugin available',
-          guidance: 'Verify server name and tool availability with GET /tools'
-        },
-        timestamp: new Date().toISOString()
-      });
-    }
+    res.status(404).json({
+      error: 'Execution failed',
+      message: mcpError.message,
+      server,
+      tool,
+      suggestion: 'Check available servers/tools with GET /tools',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -246,9 +151,6 @@ app.get('/', (req, res) => {
       health: 'GET /health',
       fortune: 'GET /fortune', 
       tools: 'GET /tools',
-      profiles: 'GET /profiles',
-      loadProfile: 'POST /profile/:profileName',
-      planningBoost: 'POST /planning-boost',
       execute: 'POST /execute/:server/:tool'
     },
     defaultProfile: 'senior-developer',
@@ -282,16 +184,10 @@ const server = app.listen(PORT, async () => {
   console.log('  GET  /health           - Server health check');
   console.log('  GET  /fortune          - Educational FLOW/VIBE wisdom');
   console.log('  GET  /tools            - Available MCP servers and plugins');
-  console.log('  GET  /profiles         - Available capability personas');
-  console.log('  POST /profile/:name    - Load a capability persona');
-  console.log('  POST /planning-boost   - Planning help for non-reasoning agents');
   console.log('  POST /execute/:server/:tool - Execute MCP server tools');
   console.log('');
   console.log('PHILOSOPHY: VIBE - Verify, and Inspirational Behaviors Emerge');
   console.log('METHODOLOGY: FLOW - Following Logical Work Order');
-  console.log('DEFAULT PERSONA: senior-developer');
-  console.log('');
-  console.log('Available Personas: senior-developer, friday, vita, planning-boost, soft-skills, python-debugging');
   console.log('Fortune:', getRandomFortune());
   console.log('');
   
@@ -302,10 +198,7 @@ const server = app.listen(PORT, async () => {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully...');
-  await Promise.all([
-    pluginSystem.shutdown(),
-    mcpClient.shutdown()
-  ]);
+  await mcpClient.shutdown();
   server.close(() => {
     console.log('Claude Conduit server closed');
     process.exit(0);
@@ -314,10 +207,7 @@ process.on('SIGTERM', async () => {
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully...');
-  await Promise.all([
-    pluginSystem.shutdown(),
-    mcpClient.shutdown()
-  ]);
+  await mcpClient.shutdown();
   server.close(() => {
     console.log('Claude Conduit server closed');
     process.exit(0);
