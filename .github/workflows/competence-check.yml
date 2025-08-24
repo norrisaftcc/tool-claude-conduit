@@ -1,0 +1,250 @@
+name: Competence Over Complexity Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+
+jobs:
+  demo-verification:
+    name: Verify Working Demo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Demo in PR Description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prBody = context.payload.pull_request.body || '';
+            const hasDemo = prBody.includes('Demo Link:') || 
+                           prBody.includes('Demo:') || 
+                           prBody.includes('🎬');
+            
+            if (!hasDemo) {
+              core.setFailed('PR must include a working demo. Add a demo link or video to the PR description.');
+              
+              // Post comment with instructions
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## ❌ Working Demo Required
+                
+This PR cannot be merged without a working demonstration.
+
+Please update the PR description to include:
+- A Loom video link showing the feature working
+- A GIF demonstrating the functionality
+- A link to recorded terminal session (asciinema)
+- Or schedule a live demo in the next sprint review
+
+**Remember:** "Show me it working, or it doesn't merge."`
+              });
+            }
+
+  complexity-analysis:
+    name: Analyze Code Complexity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Count Mock Implementations
+        id: mock-count
+        run: |
+          # Count mock/stub/fake/simulated references
+          MOCK_COUNT=$(grep -r "mock\|stub\|fake\|simulated\|FunkBot\|🎷🤖\|🐰" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules \
+            --exclude-dir=test \
+            --exclude-dir=.git | wc -l || echo "0")
+          
+          echo "mock_count=$MOCK_COUNT" >> $GITHUB_OUTPUT
+          
+          if [ "$MOCK_COUNT" -gt 20 ]; then
+            echo "::error::Critical: $MOCK_COUNT mock implementations detected (limit: 20)"
+            exit 1
+          elif [ "$MOCK_COUNT" -gt 10 ]; then
+            echo "::warning::Warning: $MOCK_COUNT mock implementations detected"
+          fi
+          
+          echo "Mock/Stub count: $MOCK_COUNT"
+      
+      - name: Check Abstraction Depth
+        run: |
+          # Check for deep inheritance chains
+          echo "Checking for deep inheritance chains..."
+          
+          # Look for triple inheritance
+          if grep -r "extends.*extends.*extends" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git; then
+            echo "::error::Deep inheritance chain detected (3+ levels)"
+            exit 1
+          fi
+          
+          # Count total inheritance usage
+          INHERITANCE_COUNT=$(grep -r "extends\|implements" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules \
+            --exclude-dir=test \
+            --exclude-dir=.git | wc -l || echo "0")
+          
+          echo "Inheritance usage count: $INHERITANCE_COUNT"
+          
+          if [ "$INHERITANCE_COUNT" -gt 50 ]; then
+            echo "::warning::High inheritance usage: $INHERITANCE_COUNT instances"
+          fi
+      
+      - name: Check Interface to Implementation Ratio
+        run: |
+          # Count interfaces/abstracts vs concrete implementations
+          INTERFACE_COUNT=$(grep -r "class.*Abstract\|interface\|Protocol" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git | wc -l || echo "0")
+          
+          CONCRETE_COUNT=$(grep -r "^class\|function.*{$\|const.*=.*function" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules \
+            --exclude-dir=test \
+            --exclude-dir=.git | wc -l || echo "0")
+          
+          echo "Interfaces/Abstracts: $INTERFACE_COUNT"
+          echo "Concrete Implementations: $CONCRETE_COUNT"
+          
+          if [ "$CONCRETE_COUNT" -gt 0 ]; then
+            RATIO=$(echo "scale=2; $INTERFACE_COUNT / $CONCRETE_COUNT" | bc)
+            echo "Interface to Implementation Ratio: $RATIO"
+            
+            if (( $(echo "$RATIO > 0.5" | bc -l) )); then
+              echo "::warning::High abstraction ratio: $RATIO (should be < 0.5)"
+            fi
+          fi
+      
+      - name: Calculate KISS Coefficient
+        id: kiss
+        run: |
+          # Count actual working features (rough estimate based on exports and endpoints)
+          FEATURE_COUNT=$(grep -r "export\|module.exports\|router.\(get\|post\|put\|delete\)" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules \
+            --exclude-dir=test \
+            --exclude-dir=.git | wc -l || echo "1")
+          
+          # Count total lines of code
+          LOC=$(find . -name "*.js" -o -name "*.ts" \
+            -not -path "./node_modules/*" \
+            -not -path "./.git/*" \
+            -not -path "./test/*" | xargs wc -l | tail -1 | awk '{print $1}' || echo "1")
+          
+          # Calculate KISS coefficient
+          KISS=$(echo "scale=6; $FEATURE_COUNT / $LOC" | bc)
+          
+          echo "Features: $FEATURE_COUNT"
+          echo "Lines of Code: $LOC"
+          echo "KISS Coefficient: $KISS"
+          
+          echo "kiss_coefficient=$KISS" >> $GITHUB_OUTPUT
+          echo "loc=$LOC" >> $GITHUB_OUTPUT
+          echo "features=$FEATURE_COUNT" >> $GITHUB_OUTPUT
+          
+          # Check if we're in FunkBot territory
+          if (( $(echo "$KISS < 0.00001" | bc -l) )); then
+            echo "::error::Critical: KISS coefficient $KISS indicates FunkBot-level complexity"
+            exit 1
+          elif (( $(echo "$KISS < 0.0001" | bc -l) )); then
+            echo "::warning::Warning: Low KISS coefficient $KISS"
+          fi
+      
+      - name: Post Complexity Report
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const mockCount = '${{ steps.mock-count.outputs.mock_count }}' || '0';
+            const kissCoeff = '${{ steps.kiss.outputs.kiss_coefficient }}' || '0';
+            const loc = '${{ steps.kiss.outputs.loc }}' || '0';
+            const features = '${{ steps.kiss.outputs.features }}' || '0';
+            
+            const report = `## 📊 Complexity Analysis Report
+            
+            ### Metrics
+            - **Lines of Code:** ${loc}
+            - **Feature Count:** ${features}
+            - **KISS Coefficient:** ${kissCoeff}
+            - **Mock Count:** ${mockCount}
+            
+            ### Thresholds
+            - ✅ Good: KISS > 0.001
+            - ⚠️ Warning: KISS 0.0001 - 0.001
+            - ❌ Critical: KISS < 0.0001 (FunkBot territory)
+            
+            ### Recommendations
+            ${parseFloat(kissCoeff) < 0.001 ? '- Consider simplifying abstractions\n- Remove unnecessary interfaces\n- Delete unused code' : '- Complexity levels acceptable'}
+            
+            Remember: **Competence over Complexity**`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: report
+            });
+
+  changed-files-check:
+    name: Verify Changes Are Functional
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for Documentation-Only Changes
+        run: |
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          # Count documentation vs code changes
+          DOC_COUNT=$(echo "$CHANGED_FILES" | grep -c "\.md$\|\.txt$\|\.rst$" || echo "0")
+          CODE_COUNT=$(echo "$CHANGED_FILES" | grep -c "\.js$\|\.ts$\|\.py$" || echo "0")
+          
+          echo "Documentation files changed: $DOC_COUNT"
+          echo "Code files changed: $CODE_COUNT"
+          
+          # Warn if more docs than code
+          if [ "$CODE_COUNT" -gt 0 ] && [ "$DOC_COUNT" -gt "$CODE_COUNT" ]; then
+            echo "::warning::More documentation than code changes. Ensure features are implemented, not just documented."
+          fi
+
+  pr-size-check:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Calculate PR Size
+        run: |
+          # Get diff statistics
+          ADDITIONS=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$1} END {print sum}' || echo "0")
+          DELETIONS=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$2} END {print sum}' || echo "0")
+          
+          echo "Lines added: $ADDITIONS"
+          echo "Lines deleted: $DELETIONS"
+          echo "Net change: $((ADDITIONS - DELETIONS))"
+          
+          # Check if PR is too large
+          if [ "$ADDITIONS" -gt 500 ]; then
+            echo "::warning::Large PR detected ($ADDITIONS additions). Consider breaking into smaller PRs."
+          fi
+          
+          # Celebrate deletions
+          if [ "$DELETIONS" -gt "$ADDITIONS" ]; then
+            echo "::notice::🎉 Net negative PR! Deleted more than added. Great work simplifying!"
+          fi
